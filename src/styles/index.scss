@@ -1,6 +1,18 @@
-$body-color: slateblue;
+// TODO: CSS reset, a nice color palette
+
+$body-color: #2A2A2A;
 
 body {
   color: $body-color;
   font-family: sans-serif;
+}
+
+#container {
+  max-width: 1024px;
+  margin: 0 auto;
+}
+
+
+svg {
+  background-color: #FAFAFA;
 }
