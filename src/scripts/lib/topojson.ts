@@ -2,9 +2,9 @@ import * as topojson from "topojson-client";
 import { Topology } from "topojson-specification";
 import { FeatureCollection } from "geojson";
 
-export function extractUnits(boundaryData: Topology) {
+export function extractUnits<T>(boundaryData: Topology<T>) {
   const collection =  topojson.feature(boundaryData, boundaryData.objects.units);
-  return (collection as FeatureCollection).features;
+  return (collection as FeatureCollection<any, U extends T>).features;
 }
 
 export function extractOuterBoundary(boundaryData: Topology) {

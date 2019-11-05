@@ -1,11 +1,44 @@
-import d3 from "./lib/d3";
+import * as d3 from "d3";
 
 import { ukProjection } from "./lib/projections";
 import { extractUnits, extractOuterBoundary, extractInnerBoundary } from "./lib/topojson";
+import { Topology, Objects } from "topojson-specification";
 
-export default class Map {
+interface MapConfig<DataRow> {
+  aspectRatio: number;
+  projection: d3.GeoProjection;
+  zoom: number;
+  zoomExtent: [number, number];
 
-  constructor(el, config) {
+  boundaryFile?: string;
+  dataFile?: string;
+
+  unitFill: string;
+  outerStroke: string;
+  innerStroke: string;
+
+  tooltipText: (d: DataRow) => string;
+}
+
+export default class Map<DataRow> {
+
+  config: MapConfig<DataRow>;
+
+  width: number;
+  height: number;
+
+  $wrapper: d3.Selection<HTMLElement, {}, HTMLElement, {}>;
+  $svg: d3.Selection<SVGElement, {}, HTMLElement, {}>;
+  $map: d3.Selection<SVGGElement, {}, HTMLElement, {}>;
+  $tooltip: d3.Selection<HTMLElement, {}, HTMLElement, {}>;
+
+  path: d3.GeoPath;
+
+  boundaryData: Topology<Objects<DataRow>>;
+  unitData: DataRow[];
+
+
+  constructor(el: HTMLElement, config: MapConfig<DataRow>) {
     this.config = config;
 
     this.initSVG(el);
@@ -19,15 +52,15 @@ export default class Map {
       });
   }
 
-  updateConfig(newConfig) {
-    this.config = { ...this.config, newConfig };
+  updateConfig(newConfig: MapConfig<DataRow>): void {
+    this.config = { ...this.config, ...newConfig };
   }
 
-  initSVG(el) {
+  initSVG(el: HTMLElement): void {
 
     const { aspectRatio = 1.6 } = this.config;
 
-    this.width = (el.offsetWidth === 0) ? el.parentNode.offsetWidth : el.offsetWidth;
+    this.width = (el.offsetWidth === 0) ? (el.parentNode as HTMLElement).offsetWidth : el.offsetWidth;
     this.height = aspectRatio*this.width;
 
     this.$wrapper = d3.select(el);
@@ -40,17 +73,15 @@ export default class Map {
       .attr("class", "map")
       .attr("style", `height: ${this.height}px !important;`);
 
-    this.svg = this.$svg.node();
-
     this.$map = this.$svg.append("g");
 
   }
 
-  initProjection() {
+  initProjection(): void {
     const {
       projection = ukProjection,
       zoom = 5,
-      zoomExtent = [1, 20],
+      zoomExtent,
     } = this.config;
 
     const projectionFunction = projection.scale(this.height * zoom)
@@ -58,13 +89,13 @@ export default class Map {
     this.path = d3.geoPath().projection(projectionFunction);
 
     const zoomFunction = d3.zoom()
-      .scaleExtent(zoomExtent)
+      .scaleExtent(zoomExtent || [1, 20])
       .translateExtent([[0, 0], [this.width, this.height]])
       .on("zoom", this.onZoom);
     this.$map.call(zoomFunction);
   }
 
-  initTooltip() {
+  initTooltip(): void {
     this.$tooltip = this.$wrapper.append("div")
       .attr("class", "hidden tooltip");
 
@@ -93,7 +124,7 @@ export default class Map {
     // TODO: Add error handling
   }
 
-  drawBoundaries() {
+  drawBoundaries(): void {
 
     const units = extractUnits(this.boundaryData);
     this.$map.selectAll(".unit")
@@ -104,6 +135,7 @@ export default class Map {
       .attr("class", d => "unit")
       .attr("data-name", d => ("name" in d.properties) ? d.properties.name : null)
       .attr("d", this.path)
+      .each(d => {})
       .on("mouseover", this.onMouseOver)
       .on("mouseout", this.onMouseOut);
 
@@ -119,7 +151,7 @@ export default class Map {
 
   }
 
-  colorize() {
+  colorize(): void {
     const {
       unitFill = "#FFFFFF",
       outerStroke = "#2A2A2A",
@@ -134,11 +166,11 @@ export default class Map {
       .attr("stroke", innerStroke);
   }
 
-  onMouseMove = () => {
+  onMouseMove = (): void => {
     if (this.$tooltip.classed("hidden")) {
       return;
     }
-    const [x, y] = d3.mouse(this.svg);
+    const [x, y] = d3.mouse(this.$svg.node() as d3.ContainerElement);
     let style;
     if (x > 0.6 * this.width) {
       style = `right: ${this.width - x + 15}px; top: ${y - 35}px`;
@@ -149,9 +181,9 @@ export default class Map {
     this.$tooltip.attr("style", style);
   }
 
-  onMouseOver = (d) => {
+  onMouseOver = (d: DataRow): void => {
     const {
-      tooltipText = (d) => "",
+      tooltipText = (d: DataRow) => "",
     } = this.config;
 
     const label = tooltipText(d);
@@ -160,20 +192,20 @@ export default class Map {
     }
   }
 
-  onMouseOut = (d) => {
+  onMouseOut = (): void => {
     this.$tooltip.classed("hidden", true);
   }
 
-  onZoom = () => {
+  onZoom = (): void => {
     this.$map.attr("transform", d3.event.transform);
   }
 
-  reset() {
+  reset(): void {
     this.$map.selectAll(".unit")
       .attr("fill", "#FFFFFF");
   }
 
-  clear() {
+  clear(): void {
     this.$map.selectAll(".unit").remove();
     this.$map.selectAll(".outer-boundary").remove();
     this.$map.selectAll(".inner-boundary").remove();
