@@ -22,5 +22,3 @@ export default class Map {
 
   }
 }
-
-// TODO eslint etc.
