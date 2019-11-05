@@ -3,9 +3,16 @@ import * as d3 from "d3";
 import { ukProjection } from "./lib/projections";
 import { extractUnits, extractOuterBoundary, extractInnerBoundary } from "./lib/topojson";
 import { Topology, Objects } from "topojson-specification";
+import { Feature, Geometry } from "geojson";
 
-interface MapConfig<DataRow> {
+interface TopoJSONItem {
+  id: string;
+  name: string;
+}
+
+interface MapConfig<DataItem> {
   aspectRatio: number;
+
   projection: d3.GeoProjection;
   zoom: number;
   zoomExtent: [number, number];
@@ -17,10 +24,10 @@ interface MapConfig<DataRow> {
   outerStroke: string;
   innerStroke: string;
 
-  tooltipText: (d: DataRow) => string;
+  tooltipText: (d: Feature<Geometry, DataItem>) => string;
 }
 
-export default class Map<DataRow> {
+export default class Map<DataRow extends TopoJSONItem> {
 
   config: MapConfig<DataRow>;
 
@@ -36,7 +43,6 @@ export default class Map<DataRow> {
 
   boundaryData: Topology<Objects<DataRow>>;
   unitData: DataRow[];
-
 
   constructor(el: HTMLElement, config: MapConfig<DataRow>) {
     this.config = config;
@@ -102,7 +108,7 @@ export default class Map<DataRow> {
     this.$wrapper.on("mousemove", this.onMouseMove);
   }
 
-  loadBoundaries() {
+  loadBoundaries(): Promise<void> {
     const { boundaryFile } = this.config;
     if (!boundaryFile) {
       return new Promise((resolve, reject) => resolve());
@@ -113,7 +119,7 @@ export default class Map<DataRow> {
     // TODO: Add error handling
   }
 
-  loadData() {
+  loadData(): Promise<void> {
     const { dataFile } = this.config;
     if (!dataFile) {
       return new Promise((resolve, reject) => resolve());
@@ -181,9 +187,9 @@ export default class Map<DataRow> {
     this.$tooltip.attr("style", style);
   }
 
-  onMouseOver = (d: DataRow): void => {
+  onMouseOver = (d: Feature<Geometry, DataRow>): void => {
     const {
-      tooltipText = (d: DataRow) => "",
+      tooltipText = (d: Feature<Geometry, DataRow>): string => "",
     } = this.config;
 
     const label = tooltipText(d);
