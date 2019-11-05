@@ -15,8 +15,7 @@ export default class Map {
       .then(() => {
         this.drawBoundaries();
         this.colorize();
-      })
-    ;
+      });
   }
 
   initSVG(el) {
@@ -51,6 +50,8 @@ export default class Map {
     return d3.json(boundaryFile).then(data => {
       this.boundaryData = data;
     });
+
+    // TODO: Add error handling
   }
 
   loadData() {
@@ -61,6 +62,8 @@ export default class Map {
     return d3.json(dataFile).then(data => {
       this.unitData = data;
     });
+
+    // TODO: Add error handling
   }
 
   drawBoundaries() {
@@ -84,6 +87,8 @@ export default class Map {
       .datum(extractInnerBoundary(this.boundaryData))
       .attr("d", this.path)
       .attr("class", "boundary inner-boundary");
+
+    // TODO: Add tooltip & zoom
 
     // if (this.config.showTooltip) {
     //     this.setupTooltip();
@@ -111,7 +116,12 @@ export default class Map {
       .attr("stroke", innerStroke);
   }
 
-  clearMap() {
+  reset() {
+    this.$map.selectAll(".unit")
+      .attr("fill", "#FFFFFF");
+  }
+
+  clear() {
     this.$map.selectAll(".unit").remove();
     this.$map.selectAll(".outer-boundary").remove();
     this.$map.selectAll(".inner-boundary").remove();
