@@ -17,6 +17,9 @@ module.exports = merge(common, {
       'process.env.NODE_ENV': JSON.stringify('development')
     })
   ],
+  resolve: {
+    extensions: [ '.ts', '.js' ],
+  },
   module: {
     rules: [
       {
@@ -27,6 +30,11 @@ module.exports = merge(common, {
         options: {
           emitWarning: true,
         }
+      },
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
       },
       {
         test: /\.js$/,

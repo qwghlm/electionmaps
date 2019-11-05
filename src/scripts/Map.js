@@ -95,7 +95,7 @@ export default class Map {
 
   drawBoundaries() {
 
-    var units = extractUnits(this.boundaryData);
+    const units = extractUnits(this.boundaryData);
     this.$map.selectAll(".unit")
       .data(units)
       .enter()

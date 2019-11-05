@@ -16,6 +16,5 @@ document.addEventListener("DOMContentLoaded", (e) => {
       const { name } = properties;
       return name;
     }
-
   });
 });

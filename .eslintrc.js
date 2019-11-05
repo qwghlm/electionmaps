@@ -3,15 +3,18 @@ module.exports = {
     browser: true,
     es6: true,
   },
-  plugins: ["babel"],
+  plugins: [
+    "@typescript-eslint",
+  ],
   extends: [
     "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
   ],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
   },
-  parser: "babel-eslint",
+  "parser": "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',
@@ -24,5 +27,18 @@ module.exports = {
       args: "none",
       ignoreRestSiblings: true
     }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "args": "none",
+        "ignoreRestSiblings": true
+      }
+    ],
   },
+  overrides: [{
+    "files": ["*.js"],
+    "rules": {
+      "@typescript-eslint/explicit-function-return-type": "off"
+    }
+  }]
 };
