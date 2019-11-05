@@ -3,6 +3,7 @@ module.exports = {
     browser: true,
     es6: true,
   },
+  plugins: ["babel"],
   extends: [
     "eslint:recommended",
   ],
@@ -10,6 +11,7 @@ module.exports = {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly',
   },
+  parser: "babel-eslint",
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: 'module',

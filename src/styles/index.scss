@@ -1,10 +1,14 @@
-// TODO: CSS reset, a nice color palette
+@import "./reset.scss";
 
-$body-color: #2A2A2A;
+$black: hsl(0, 0%, 4%);
+$white: #FFFFFF;
+$dark-grey: hsl(0, 0%, 21%);
+
+$family-sans-serif: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif !default;
 
 body {
-  color: $body-color;
-  font-family: sans-serif;
+  color: $black;
+  font-family: $family-sans-serif;
 }
 
 #container {
@@ -12,8 +16,14 @@ body {
   margin: 0 auto;
 }
 
+//
+
+.map-wrapper {
+  position: relative;
+}
 
 svg.map {
+
   width: auto !important;
   height: auto !important;
 
@@ -30,15 +40,31 @@ svg.map {
       transition: stroke 0.4s ease-in, stroke-width 0.2s ease-in;
   }
 
-  // .map-label {
-  //     fill: $fill-gray-darker;
-  //     font-size: 85%;
-  // }
+}
 
-  // .map-inset {
-  //     fill: none;
-  //     stroke: $fill-gray;
-  //     stroke-width: 0.25px;
-  // }
+.tooltip {
 
+  position: absolute;
+  text-align: left !important;
+
+  padding: .5rem;
+  border-radius: .25rem;
+  max-width: 50%;
+
+  color: $white;
+  background-color: rgba($dark-grey, 0.7);
+
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 200ms linear;
+
+  &.hidden {
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s 200ms, opacity 200ms linear;
+  }
+
+  @media only screen and (max-width: 640px) {
+    font-size: 80%;
+  }
 }
