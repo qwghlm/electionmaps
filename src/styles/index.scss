@@ -18,31 +18,31 @@ body {
 
 //
 
-.map-wrapper {
+.ukem-map-wrapper {
   position: relative;
 }
 
-svg.map {
+.ukem-map {
 
   width: auto !important;
   height: auto !important;
 
-  .unit {
+  .ukem-unit {
       transition: fill 0.4s ease-in-out;
   }
 
-  .unit-selected {
+  .ukem-unit-selected {
       transition: stroke 0.4s ease-in, stroke-width 0.2s ease-in;
   }
 
-  .outer-boundary, .inner-boundary, .outline {
+  .ukem-outer-boundary, .ukem-inner-boundary, .ukem-unit-outline {
       fill: none;
       transition: stroke 0.4s ease-in, stroke-width 0.2s ease-in;
   }
 
 }
 
-.tooltip {
+.ukem-tooltip {
 
   position: absolute;
   text-align: left !important;
@@ -58,13 +58,9 @@ svg.map {
   opacity: 1;
   transition: opacity 200ms linear;
 
-  &.hidden {
+  &.ukem-tooltip-hidden {
     visibility: hidden;
     opacity: 0;
     transition: visibility 0s 200ms, opacity 200ms linear;
-  }
-
-  @media only screen and (max-width: 640px) {
-    font-size: 80%;
   }
 }

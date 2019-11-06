@@ -5,27 +5,7 @@ import { extractUnits, extractOuterBoundary, extractInnerBoundary } from "./lib/
 import { Topology, Objects } from "topojson-specification";
 import { Feature, Geometry } from "geojson";
 
-interface TopoJSONItem {
-  id: string;
-  name: string;
-}
-
-interface MapConfig<DataItem> {
-  aspectRatio: number;
-
-  projection: d3.GeoProjection;
-  zoom: number;
-  zoomExtent: [number, number];
-
-  boundaryFile?: string;
-  dataFile?: string;
-
-  unitFill: string;
-  outerStroke: string;
-  innerStroke: string;
-
-  tooltipText: (d: Feature<Geometry, DataItem>) => string;
-}
+import { TopoJSONItem, MapConfig } from "./types";
 
 export default class Map<DataRow extends TopoJSONItem> {
 
@@ -70,13 +50,13 @@ export default class Map<DataRow extends TopoJSONItem> {
     this.height = aspectRatio*this.width;
 
     this.$wrapper = d3.select(el);
-    this.$wrapper.classed("map-wrapper", true);
+    this.$wrapper.classed("ukem-map-wrapper", true);
 
     this.$svg = this.$wrapper.append("svg")
       .attr("xmlns", "http://www.w3.org/2000/svg")
       .attr("width", this.width)
       .attr("height", this.height)
-      .attr("class", "map")
+      .attr("class", "ukem-map")
       .attr("style", `height: ${this.height}px !important;`);
 
     this.$map = this.$svg.append("g");
@@ -103,7 +83,7 @@ export default class Map<DataRow extends TopoJSONItem> {
 
   initTooltip(): void {
     this.$tooltip = this.$wrapper.append("div")
-      .attr("class", "hidden tooltip");
+      .attr("class", "ukem-tooltip ukem-tooltip-hidden");
 
     this.$wrapper.on("mousemove", this.onMouseMove);
   }
@@ -133,13 +113,12 @@ export default class Map<DataRow extends TopoJSONItem> {
   drawBoundaries(): void {
 
     const units = extractUnits(this.boundaryData);
-    this.$map.selectAll(".unit")
+    this.$map.selectAll(".ukem-unit")
       .data(units)
       .enter()
       .append("path")
-      .attr("id", d => `unit-${d.properties.id.toLowerCase()}`)
-      .attr("class", d => "unit")
-      .attr("data-name", d => ("name" in d.properties) ? d.properties.name : null)
+      .attr("id", d => `ukem-unit-${d.properties.id.toLowerCase()}`)
+      .attr("class", d => "ukem-unit")
       .attr("d", this.path)
       .each(d => {})
       .on("mouseover", this.onMouseOver)
@@ -148,12 +127,12 @@ export default class Map<DataRow extends TopoJSONItem> {
     this.$map.append("path")
       .datum(extractInnerBoundary(this.boundaryData))
       .attr("d", this.path)
-      .attr("class", "boundary inner-boundary");
+      .attr("class", "ukem-boundary ukem-inner-boundary");
 
     this.$map.append("path")
       .datum(extractOuterBoundary(this.boundaryData))
       .attr("d", this.path)
-      .attr("class", "boundary outer-boundary");
+      .attr("class", "ukem-boundary ukem-outer-boundary");
 
   }
 
@@ -164,16 +143,16 @@ export default class Map<DataRow extends TopoJSONItem> {
       innerStroke = "#CCCCCC",
     } = this.config;
 
-    this.$map.selectAll(".unit")
+    this.$map.selectAll(".ukem-unit")
       .attr("fill", unitFill);
-    this.$map.selectAll(".outer-boundary")
+    this.$map.selectAll(".ukem-outer-boundary")
       .attr("stroke", outerStroke);
-    this.$map.selectAll(".inner-boundary")
+    this.$map.selectAll(".ukem-inner-boundary")
       .attr("stroke", innerStroke);
   }
 
   onMouseMove = (): void => {
-    if (this.$tooltip.classed("hidden")) {
+    if (this.$tooltip.classed("ukem-tooltip-hidden")) {
       return;
     }
     const [x, y] = d3.mouse(this.$svg.node() as d3.ContainerElement);
@@ -194,12 +173,12 @@ export default class Map<DataRow extends TopoJSONItem> {
 
     const label = tooltipText(d);
     if (typeof label != "undefined" && label !== "") {
-      this.$tooltip.classed("hidden", false).html(label);
+      this.$tooltip.classed("ukem-tooltip-hidden", false).html(label);
     }
   }
 
   onMouseOut = (): void => {
-    this.$tooltip.classed("hidden", true);
+    this.$tooltip.classed("ukem-tooltip-hidden", true);
   }
 
   onZoom = (): void => {
@@ -207,13 +186,13 @@ export default class Map<DataRow extends TopoJSONItem> {
   }
 
   reset(): void {
-    this.$map.selectAll(".unit")
+    this.$map.selectAll(".ukem-unit")
       .attr("fill", "#FFFFFF");
   }
 
   clear(): void {
-    this.$map.selectAll(".unit").remove();
-    this.$map.selectAll(".outer-boundary").remove();
-    this.$map.selectAll(".inner-boundary").remove();
+    this.$map.selectAll(".ukem-unit").remove();
+    this.$map.selectAll(".ukem-outer-boundary").remove();
+    this.$map.selectAll(".ukem-inner-boundary").remove();
   }
 }
