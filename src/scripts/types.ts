@@ -15,9 +15,12 @@ export interface MapConfig<DataItem> {
   boundaryFile?: string;
   dataFile?: string;
 
-  unitFill: string;
-  outerStroke: string;
-  innerStroke: string;
+  unitColor: string;
+  innerBoundaryColor: string;
+  outerBoundaryColor: string;
+
+  innerBoundaryWidth: number;
+  outerBoundaryWidth: number;
 
   tooltipText: (d: Feature<Geometry, DataItem>) => string;
 }

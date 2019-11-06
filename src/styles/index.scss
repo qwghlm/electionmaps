@@ -16,7 +16,7 @@ body {
   margin: 0 auto;
 }
 
-//
+// TODO Split these off
 
 .ukem-map-wrapper {
   position: relative;
@@ -28,16 +28,16 @@ body {
   height: auto !important;
 
   .ukem-unit {
-      transition: fill 0.4s ease-in-out;
+    transition: fill 0.4s ease-in-out;
   }
 
   .ukem-unit-selected {
-      transition: stroke 0.4s ease-in, stroke-width 0.2s ease-in;
+    transition: stroke 0.4s ease-in, stroke-width 0.2s ease-in;
   }
 
   .ukem-outer-boundary, .ukem-inner-boundary, .ukem-unit-outline {
-      fill: none;
-      transition: stroke 0.4s ease-in, stroke-width 0.2s ease-in;
+    fill: none;
+    transition: stroke 0.4s ease-in, stroke-width 0.2s ease-in;
   }
 
 }

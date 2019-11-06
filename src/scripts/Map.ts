@@ -1,3 +1,6 @@
+// TODOS: Improve dragging behaviour
+// Implement coloring properly
+
 import * as d3 from "d3";
 
 import { ukProjection } from "./lib/projections";
@@ -6,6 +9,23 @@ import { Topology, Objects } from "topojson-specification";
 import { Feature, Geometry } from "geojson";
 
 import { TopoJSONItem, MapConfig } from "./types";
+
+const DEFAULT_CONFIG: MapConfig<unknown> = {
+  aspectRatio: 1.6,
+  projection: ukProjection,
+  zoom: 5,
+  zoomExtent: [1, 20],
+
+  unitColor: "#FFFFFF",
+
+  innerBoundaryColor: "#CCCCCC",
+  outerBoundaryColor: "#2A2A2A",
+
+  innerBoundaryWidth: 1,
+  outerBoundaryWidth: 1,
+
+  tooltipText: (d: Feature<Geometry, unknown>): string => "",
+};
 
 export default class Map<DataRow extends TopoJSONItem> {
 
@@ -19,16 +39,20 @@ export default class Map<DataRow extends TopoJSONItem> {
   $map: d3.Selection<SVGGElement, {}, HTMLElement, {}>;
   $tooltip: d3.Selection<HTMLElement, {}, HTMLElement, {}>;
 
+  zoom: d3.ZoomBehavior<Element, unknown>;
   path: d3.GeoPath;
 
   boundaryData: Topology<Objects<DataRow>>;
   unitData: DataRow[];
 
-  constructor(el: HTMLElement, config: MapConfig<DataRow>) {
-    this.config = config;
+  constructor(el: HTMLElement, config: Partial<MapConfig<DataRow>>) {
+    this.config = {
+      ...DEFAULT_CONFIG,
+      ...config,
+    };
 
     this.initSVG(el);
-    this.initProjection();
+    this.initMap();
     this.initTooltip();
     this.loadBoundaries()
       .then(() => this.loadData())
@@ -43,8 +67,7 @@ export default class Map<DataRow extends TopoJSONItem> {
   }
 
   initSVG(el: HTMLElement): void {
-
-    const { aspectRatio = 1.6 } = this.config;
+    const { aspectRatio } = this.config;
 
     this.width = (el.offsetWidth === 0) ? (el.parentNode as HTMLElement).offsetWidth : el.offsetWidth;
     this.height = aspectRatio*this.width;
@@ -63,22 +86,26 @@ export default class Map<DataRow extends TopoJSONItem> {
 
   }
 
-  initProjection(): void {
-    const {
-      projection = ukProjection,
-      zoom = 5,
-      zoomExtent,
-    } = this.config;
+  initMap(): void {
+    const { projection, zoom,  zoomExtent } = this.config;
+
+    this.$map.insert("g", ":first-child")
+      .append("rect")
+      .attr("class", "ukem-underlay")
+      .attr("width", this.width)
+      .attr("height", this.height)
+      .attr("fill", "#FAFAFF");
 
     const projectionFunction = projection.scale(this.height * zoom)
       .translate([this.width / 2, this.height / 2]);
     this.path = d3.geoPath().projection(projectionFunction);
 
-    const zoomFunction = d3.zoom()
+    this.zoom = d3.zoom()
       .scaleExtent(zoomExtent || [1, 20])
       .translateExtent([[0, 0], [this.width, this.height]])
-      .on("zoom", this.onZoom);
-    this.$map.call(zoomFunction);
+      .on("zoom", this.onZoom)
+      .on("end", () => this.updateBoundaries());
+    this.$map.call(this.zoom);
   }
 
   initTooltip(): void {
@@ -111,7 +138,6 @@ export default class Map<DataRow extends TopoJSONItem> {
   }
 
   drawBoundaries(): void {
-
     const units = extractUnits(this.boundaryData);
     this.$map.selectAll(".ukem-unit")
       .data(units)
@@ -133,22 +159,27 @@ export default class Map<DataRow extends TopoJSONItem> {
       .datum(extractOuterBoundary(this.boundaryData))
       .attr("d", this.path)
       .attr("class", "ukem-boundary ukem-outer-boundary");
+    this.updateBoundaries();
+  }
 
+  updateBoundaries(): void {
+    const { outerBoundaryWidth, innerBoundaryWidth } = this.config;
+    const k = (this.zoom) ? (d3.zoomTransform(this.$map.node()).k) : 1;
+    this.$map.select(".ukem-outer-boundary")
+      .attr("stroke-width", outerBoundaryWidth/k);
+    this.$map.select(".ukem-inner-boundary")
+      .attr("stroke-width", innerBoundaryWidth/k);
   }
 
   colorize(): void {
-    const {
-      unitFill = "#FFFFFF",
-      outerStroke = "#2A2A2A",
-      innerStroke = "#CCCCCC",
-    } = this.config;
+    const { unitColor, outerBoundaryColor, innerBoundaryColor } = this.config;
 
     this.$map.selectAll(".ukem-unit")
-      .attr("fill", unitFill);
+      .attr("fill", unitColor);
     this.$map.selectAll(".ukem-outer-boundary")
-      .attr("stroke", outerStroke);
+      .attr("stroke", outerBoundaryColor);
     this.$map.selectAll(".ukem-inner-boundary")
-      .attr("stroke", innerStroke);
+      .attr("stroke", innerBoundaryColor);
   }
 
   onMouseMove = (): void => {
@@ -167,11 +198,9 @@ export default class Map<DataRow extends TopoJSONItem> {
   }
 
   onMouseOver = (d: Feature<Geometry, DataRow>): void => {
-    const {
-      tooltipText = (d: Feature<Geometry, DataRow>): string => "",
-    } = this.config;
-
+    const { tooltipText } = this.config;
     const label = tooltipText(d);
+
     if (typeof label != "undefined" && label !== "") {
       this.$tooltip.classed("ukem-tooltip-hidden", false).html(label);
     }
@@ -183,6 +212,16 @@ export default class Map<DataRow extends TopoJSONItem> {
 
   onZoom = (): void => {
     this.$map.attr("transform", d3.event.transform);
+  }
+
+  zoomIn(): void {
+    const k = d3.zoomTransform(this.$map.node()).k;
+    this.zoom.scaleTo(this.$map.transition(), k*1.5);
+  }
+
+  zoomOut(): void {
+    const k = d3.zoomTransform(this.$map.node()).k;
+    this.zoom.scaleTo(this.$map.transition(), k/1.5);
   }
 
   reset(): void {
