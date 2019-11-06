@@ -39,7 +39,7 @@ module.exports = {
         type: 'javascript/auto'
       },
       {
-        test: /\.(ico|topojson|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/,
+        test: /\.(ico|csv|topojson|jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2)(\?.*)?$/,
         use: {
           loader: 'file-loader',
           options: {

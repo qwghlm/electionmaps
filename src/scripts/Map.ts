@@ -1,14 +1,11 @@
 // TODOS: Improve dragging behaviour
-// Implement coloring properly
 
 import * as d3 from "d3";
 
+import { BasicProperties, BasicDataRow, MapFeature, MapTopology, MapConfig } from "./types";
+import load from "./lib/loader";
 import { ukProjection } from "./lib/projections";
 import { extractUnits, extractOuterBoundary, extractInnerBoundary } from "./lib/topojson";
-import { Topology, Objects } from "topojson-specification";
-import { Feature, Geometry } from "geojson";
-
-import { TopoJSONItem, MapConfig } from "./types";
 
 const DEFAULT_CONFIG: MapConfig<unknown> = {
   aspectRatio: 1.6,
@@ -16,7 +13,7 @@ const DEFAULT_CONFIG: MapConfig<unknown> = {
   zoom: 5,
   zoomExtent: [1, 20],
 
-  unitColor: "#FFFFFF",
+  unitColor: (d) => "#FFFFFF",
 
   innerBoundaryColor: "#CCCCCC",
   outerBoundaryColor: "#2A2A2A",
@@ -24,10 +21,10 @@ const DEFAULT_CONFIG: MapConfig<unknown> = {
   innerBoundaryWidth: 1,
   outerBoundaryWidth: 1,
 
-  tooltipText: (d: Feature<Geometry, unknown>): string => "",
+  tooltipText: (d: MapFeature<unknown>): string => "",
 };
 
-export default class Map<DataRow extends TopoJSONItem> {
+export default class Map<DataRow extends BasicDataRow> {
 
   config: MapConfig<DataRow>;
 
@@ -42,8 +39,8 @@ export default class Map<DataRow extends TopoJSONItem> {
   zoom: d3.ZoomBehavior<Element, unknown>;
   path: d3.GeoPath;
 
-  boundaryData: Topology<Objects<DataRow>>;
-  unitData: DataRow[];
+  boundaryData: MapTopology<BasicProperties>;
+  unitData: { [id: string]: DataRow };
 
   constructor(el: HTMLElement, config: Partial<MapConfig<DataRow>>) {
     this.config = {
@@ -120,7 +117,7 @@ export default class Map<DataRow extends TopoJSONItem> {
     if (!boundaryFile) {
       return new Promise((resolve, reject) => resolve());
     }
-    return d3.json(boundaryFile).then(data => {
+    return load(boundaryFile).then((data: MapTopology<BasicProperties>) => {
       this.boundaryData = data;
     });
     // TODO: Add error handling
@@ -131,14 +128,22 @@ export default class Map<DataRow extends TopoJSONItem> {
     if (!dataFile) {
       return new Promise((resolve, reject) => resolve());
     }
-    return d3.json(dataFile).then(data => {
-      this.unitData = data;
+    return load(dataFile).then((data: DataRow[]) => {
+      this.unitData = data.reduce((acc, row) => ({...acc, [row.id]: row}), {});
     });
     // TODO: Add error handling
   }
 
   drawBoundaries(): void {
-    const units = extractUnits(this.boundaryData);
+
+    const units = extractUnits(this.boundaryData).map(({ properties, ...rest }) => ({
+      ...rest,
+      properties: {
+        ...this.unitData[properties.id],
+        ...properties
+      }
+    }));
+
     this.$map.selectAll(".ukem-unit")
       .data(units)
       .enter()
@@ -146,7 +151,6 @@ export default class Map<DataRow extends TopoJSONItem> {
       .attr("id", d => `ukem-unit-${d.properties.id.toLowerCase()}`)
       .attr("class", d => "ukem-unit")
       .attr("d", this.path)
-      .each(d => {})
       .on("mouseover", this.onMouseOver)
       .on("mouseout", this.onMouseOut);
 
@@ -197,7 +201,7 @@ export default class Map<DataRow extends TopoJSONItem> {
     this.$tooltip.attr("style", style);
   }
 
-  onMouseOver = (d: Feature<Geometry, DataRow>): void => {
+  onMouseOver = (d: MapFeature<DataRow>): void => {
     const { tooltipText } = this.config;
     const label = tooltipText(d);
 

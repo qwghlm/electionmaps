@@ -1,23 +1,37 @@
 import "../styles/index.scss";
+
 import "../data/westminster.topojson";
+import "../data/uk-election-results-2015.csv";
 
 import Map from "./Map";
+import { BasicDataRow, MapConfig } from "./types";
+import { getPartyColor, getPartyName } from "./lib/politics";
 
 // TODO
 // Add change election facility
 
+interface ElectionResult extends BasicDataRow {
+  winner: string;
+}
+
 document.addEventListener("DOMContentLoaded", (e) => {
 
   const el = document.querySelector("#map-wrapper");
-  const map = new Map(el as HTMLElement, {
+
+  const config: Partial<MapConfig<ElectionResult>> = {
 
     boundaryFile: "/data/westminster.topojson",
+    dataFile: "/data/uk-election-results-2015.csv?foo=bar",
 
+    unitColor: ({ properties: { winner }}): string => {
+      return getPartyColor(winner);
+    },
 
-    tooltipText: ({ properties: { name } }): string => {
-      return name;
+    tooltipText: ({ properties : { name, winner }}): string => {
+      return `${name}<br>Winner: ${getPartyName(winner)}`;
     }
-  });
+  };
+  const map = new Map(el as HTMLElement, config);
 
   document.querySelector("#map-button-zoom-in").addEventListener("click", (e) => {
     e.preventDefault();
