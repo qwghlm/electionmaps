@@ -1,85 +1,84 @@
 import { PartyLookup } from "../types";
 
 const parties: PartyLookup = {
-  "Con": {
-    color: "#1B62E2",
+  "con": {
+    color: "#0087DC",
     name: "Conservative",
     abbreviation: "Con",
   },
-  "Lab": {
-    color: "#EE3624",
+  "lab": {
+    color: "#DC241f",
     name: "Labour",
     abbreviation: "Lab",
   },
-  "UKIP": {
-    color: "#6157A5",
-    name: "UK Independence Party",
-    abbreviation: "UKIP",
-  },
-  "LD": {
-    color: "#f7ad19",
+  "ld": {
+    color: "#FAA61A",
     name: "Lib Dem",
     abbreviation: "LD",
   },
-  "Grn": {
-    color: "#31a354",
+  "ukip": {
+    color: "#70147A",
+    name: "UKIP",
+    abbreviation: "UKIP",
+  },
+  "brx": {
+    color: "#12B6CF",
+    name: "Brexit",
+    abbreviation: "Brex",
+  },
+  "grn": {
+    color: "#6AB023",
     name: "Green",
     abbreviation: "Grn",
   },
-  "Ind": {
+  "ind": {
     color: "#888888",
     name: "Independent",
     abbreviation: "Ind",
   },
-  "Spk": {
+  "spk": {
     color: "#CCCCCC",
     name: "Speaker",
     abbreviation: "Spk",
   },
-  "SNP": {
-    color: "#fff200",
+  "snp": {
+    color: "#FDF38E",
     name: "Scottish National Party",
     abbreviation: "SNP",
   },
-  "PC": {
-    color: "#3D7B3B",
+  "pc": {
+    color: "#008142",
     name: "Plaid Cymru",
     abbreviation: "PC",
   },
 
-  "DUP": {
-    color: "#8b7cf7",
+  "dup": {
+    color: "#D46A4C",
     name: "Democratic Unionist",
     abbreviation: "DUP",
   },
-  "SF": {
-    color: "#67AF45",
+  "sf": {
+    color: "#326760",
     name: "Sinn Fein",
     abbreviation: "SF",
   },
-  "UUP": {
-    color: "#332D7F",
+  "uup": {
+    color: "#48A5EE",
     name: "Ulster Unionist",
     abbreviation: "UUP",
   },
-  "SDLP": {
-    color: "#007D7C",
+  "sdlp": {
+    color: "#D25469",
     name: "Social Democratic & Labour Party",
     abbreviation: "SDLP",
   },
-  "AP": {
-    color: "#FFCA44",
+  "ap": {
+    color: "#F6CB2F",
     name: "Alliance",
     abbreviation: "AP",
   },
 
-  "NOC": {
-    color: "#CCCCCC",
-    name: "No Overall Control",
-    abbreviation: "NOC",
-  },
-
-  "Oth": {
+  "oth": {
     color: "#E0E0E0",
     name: "Other",
     abbreviation: "Oth",

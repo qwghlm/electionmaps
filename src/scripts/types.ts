@@ -21,7 +21,7 @@ export type MapTopology<P> = Topology<Objects<BasicProperties & P>>
 // The object's properties contain props from both the topojson item and the data file
 export type MapFeature<P> = Feature<Geometry, BasicProperties & P>;
 
-type D3Attr<P, T> = ValueFn<d3.BaseType, MapFeature<P>, T>;
+type D3Attr<Props, Result> = ValueFn<d3.BaseType, MapFeature<Props>, Result> | Result;
 
 // Configuration for a map
 export interface MapConfig<P> {
@@ -35,8 +35,8 @@ export interface MapConfig<P> {
   dataFile?: string;
 
   unitColor: D3Attr<P, string>;
-  innerBoundaryColor: string;
-  outerBoundaryColor: string;
+  innerBoundaryColor: D3Attr<P, string>;
+  outerBoundaryColor: D3Attr<P, string>;
   innerBoundaryWidth: number;
   outerBoundaryWidth: number;
 

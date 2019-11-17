@@ -1,4 +1,17 @@
-// TODOS: Improve dragging behaviour
+// TODOS:
+//
+// Other data sources for 2017
+//
+// Fucking dragging fuck it why doesn't it work
+// Move infobox when dragging
+//
+// Test mobile
+// Test other browsers
+
+// Update README
+//
+// Original boundaries
+// Original hex boundaries
 
 import * as d3 from "d3";
 
@@ -33,8 +46,11 @@ export default class Map<DataRow extends BasicDataRow> {
 
   $wrapper: d3.Selection<HTMLElement, {}, HTMLElement, {}>;
   $svg: d3.Selection<SVGElement, {}, HTMLElement, {}>;
+  $base: d3.Selection<SVGGElement, {}, HTMLElement, {}>;
   $map: d3.Selection<SVGGElement, {}, HTMLElement, {}>;
   $tooltip: d3.Selection<HTMLElement, {}, HTMLElement, {}>;
+
+  _panning = false;
 
   zoom: d3.ZoomBehavior<Element, unknown>;
   path: d3.GeoPath;
@@ -79,7 +95,8 @@ export default class Map<DataRow extends BasicDataRow> {
       .attr("class", "ukem-map")
       .attr("style", `height: ${this.height}px !important;`);
 
-    this.$map = this.$svg.append("g");
+    this.$base = this.$svg.append("g");
+    this.$map = this.$base.append("g");
 
   }
 
@@ -98,11 +115,12 @@ export default class Map<DataRow extends BasicDataRow> {
     this.path = d3.geoPath().projection(projectionFunction);
 
     this.zoom = d3.zoom()
-      .scaleExtent(zoomExtent || [1, 20])
+      .scaleExtent(zoomExtent)
       .translateExtent([[0, 0], [this.width, this.height]])
+      .on("start", this.onZoomStart)
       .on("zoom", this.onZoom)
-      .on("end", () => this.updateBoundaries());
-    this.$map.call(this.zoom);
+      .on("end", this.onZoomEnd);
+    this.$base.call(this.zoom);
   }
 
   initTooltip(): void {
@@ -179,11 +197,11 @@ export default class Map<DataRow extends BasicDataRow> {
     const { unitColor, outerBoundaryColor, innerBoundaryColor } = this.config;
 
     this.$map.selectAll(".ukem-unit")
-      .attr("fill", unitColor);
+      .attr("fill", unitColor as any);
     this.$map.selectAll(".ukem-outer-boundary")
-      .attr("stroke", outerBoundaryColor);
+      .attr("stroke", outerBoundaryColor as any);
     this.$map.selectAll(".ukem-inner-boundary")
-      .attr("stroke", innerBoundaryColor);
+      .attr("stroke", innerBoundaryColor as any);
   }
 
   onMouseMove = (): void => {
@@ -206,7 +224,7 @@ export default class Map<DataRow extends BasicDataRow> {
     const label = tooltipText(d);
 
     if (typeof label != "undefined" && label !== "") {
-      this.$tooltip.classed("ukem-tooltip-hidden", false).html(label);
+      this.$tooltip.classed("ukem-tooltip-hidden", this._panning).html(label);
     }
   }
 
@@ -214,18 +232,31 @@ export default class Map<DataRow extends BasicDataRow> {
     this.$tooltip.classed("ukem-tooltip-hidden", true);
   }
 
+  onZoomStart = (): void => {
+    if (d3.event.sourceEvent.type !== "wheel"){
+      this._panning = true;
+      this.$tooltip.classed("ukem-tooltip-hidden", true);
+    }
+  }
+
   onZoom = (): void => {
     this.$map.attr("transform", d3.event.transform);
   }
 
+  onZoomEnd = (): void => {
+    if (this._panning) {
+      this.$tooltip.classed("ukem-tooltip-hidden", false);
+    }
+    this._panning = false;
+    this.updateBoundaries();
+  }
+
   zoomIn(): void {
-    const k = d3.zoomTransform(this.$map.node()).k;
-    this.zoom.scaleTo(this.$map.transition(), k*1.5);
+    this.zoom.scaleBy(this.$base, 3/2);
   }
 
   zoomOut(): void {
-    const k = d3.zoomTransform(this.$map.node()).k;
-    this.zoom.scaleTo(this.$map.transition(), k/1.5);
+    this.zoom.scaleBy(this.$base, 2/3);
   }
 
   reset(): void {

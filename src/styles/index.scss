@@ -12,7 +12,7 @@ body {
 }
 
 #container {
-  max-width: 1024px;
+  max-width: 500px;
   margin: 0 auto;
 }
 
@@ -51,8 +51,9 @@ body {
   border-radius: .25rem;
   max-width: 50%;
 
-  color: $white;
-  background-color: rgba($dark-grey, 0.7);
+  color: $black;
+  background-color: rgba($white, 0.8);
+  border: $black 0.5px solid;
 
   visibility: visible;
   opacity: 1;
