@@ -1,7 +1,8 @@
 import "../styles/index.scss";
 
 import "../data/westminster.topojson";
-import "../data/uk-election-results-2015.csv";
+import "../data/general-election-results-2015.csv";
+import "../data/general-election-results-2017.csv";
 
 import Map from "./Map";
 import { BasicDataRow, MapConfig } from "./types";
@@ -21,7 +22,7 @@ document.addEventListener("DOMContentLoaded", (e) => {
   const config: Partial<MapConfig<ElectionResult>> = {
 
     boundaryFile: "/data/westminster.topojson",
-    dataFile: "/data/uk-election-results-2015.csv?foo=bar",
+    dataFile: "/data/general-election-results-2017.csv",
 
     unitColor: ({ properties: { winner }}): string => {
       return getPartyColor(winner);
