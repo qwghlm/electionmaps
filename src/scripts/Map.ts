@@ -1,17 +1,18 @@
 // TODOS:
 //
-// Other data sources for 2017
-//
-// Fucking dragging fuck it why doesn't it work
+// An additional boundary set for hexagons
 // Move infobox when dragging
-//
-// Test mobile
-// Test other browsers
-
-// Update README
 //
 // Original boundaries
 // Original hex boundaries
+//
+// Test mobile & other browsers
+// - zoomstart and zoomend on Safari/Firefox don't work
+// - test IE
+// - tap/focus on mobile
+// - scroll/zoom on mobile
+//
+// Update README
 
 import * as d3 from "d3";
 
@@ -71,11 +72,10 @@ export default class Map<DataRow extends BasicDataRow> {
       .then(() => this.loadData())
       .then(() => {
         this.drawBoundaries();
-        this.colorize();
       });
   }
 
-  updateConfig(newConfig: MapConfig<DataRow>): void {
+  updateConfig(newConfig: Partial<MapConfig<DataRow>>): void {
     this.config = { ...this.config, ...newConfig };
   }
 
@@ -152,18 +152,19 @@ export default class Map<DataRow extends BasicDataRow> {
     // TODO: Add error handling
   }
 
-  drawBoundaries(): void {
-
-    const units = extractUnits(this.boundaryData).map(({ properties, ...rest }) => ({
+  extractData(): MapFeature<DataRow>[] {
+    return extractUnits(this.boundaryData).map(({ properties, ...rest }) => ({
       ...rest,
       properties: {
         ...this.unitData[properties.id],
         ...properties
       }
     }));
+  }
 
+  drawBoundaries(): void {
     this.$map.selectAll(".ukem-unit")
-      .data(units)
+      .data(this.extractData())
       .enter()
       .append("path")
       .attr("id", d => `ukem-unit-${d.properties.id.toLowerCase()}`)
@@ -182,6 +183,7 @@ export default class Map<DataRow extends BasicDataRow> {
       .attr("d", this.path)
       .attr("class", "ukem-boundary ukem-outer-boundary");
     this.updateBoundaries();
+    this.colorize();
   }
 
   updateBoundaries(): void {
@@ -191,6 +193,12 @@ export default class Map<DataRow extends BasicDataRow> {
       .attr("stroke-width", outerBoundaryWidth/k);
     this.$map.select(".ukem-inner-boundary")
       .attr("stroke-width", innerBoundaryWidth/k);
+  }
+
+  updateData(): void {
+    this.$map.selectAll(".ukem-unit")
+      .data(this.extractData());
+    this.colorize();
   }
 
   colorize(): void {

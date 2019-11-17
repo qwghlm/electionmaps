@@ -3,7 +3,7 @@ import { Topology, Objects } from "topojson-specification";
 import { FeatureCollection, Geometry, Feature, MultiLineString } from "geojson";
 
 export function extractUnits<T>(boundaryData: Topology<Objects<T>>): Feature<Geometry, T>[] {
-  const collection =  topojson.feature(boundaryData, boundaryData.objects.units);
+  const collection = topojson.feature(boundaryData, boundaryData.objects.units);
   return (collection as FeatureCollection<Geometry, T>).features;
 }
 

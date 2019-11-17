@@ -5,34 +5,25 @@ import "../data/general-election-results-2015.csv";
 import "../data/general-election-results-2017.csv";
 
 import Map from "./Map";
-import { BasicDataRow, MapConfig } from "./types";
 import { getPartyColor, getPartyName } from "./lib/politics";
-
-// TODO
-// Add change election facility
-
-interface ElectionResult extends BasicDataRow {
-  winner: string;
-}
 
 document.addEventListener("DOMContentLoaded", (e) => {
 
-  const el = document.querySelector("#map-wrapper");
-
-  const config: Partial<MapConfig<ElectionResult>> = {
+  const config = {
 
     boundaryFile: "/data/westminster.topojson",
     dataFile: "/data/general-election-results-2017.csv",
 
-    unitColor: ({ properties: { winner }}): string => {
+    unitColor: ({ properties: { winner }}) => {
       return getPartyColor(winner);
     },
 
-    tooltipText: ({ properties : { name, winner }}): string => {
+    tooltipText: ({ properties : { name, winner }}) => {
       return `${name}<br>Winner: ${getPartyName(winner)}`;
     }
   };
-  const map = new Map(el as HTMLElement, config);
+
+  const map = new Map(document.querySelector("#map-wrapper"), config);
 
   document.querySelector("#map-button-zoom-in").addEventListener("click", (e) => {
     e.preventDefault();
@@ -42,5 +33,18 @@ document.addEventListener("DOMContentLoaded", (e) => {
     e.preventDefault();
     map.zoomOut();
   });
+
+  const radios = document.querySelectorAll("input[name=map-year]");
+  for (let i=0; i<radios.length; i++) {
+    radios[i].addEventListener("change", (e) => {
+      const currentYear = e.currentTarget.value;
+      map.updateConfig({
+        dataFile: `/data/general-election-results-${currentYear}.csv`,
+      });
+      map.loadData().then(() => {
+        map.updateData();
+      });
+    });
+  }
 
 });

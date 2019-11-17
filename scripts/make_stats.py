@@ -20,7 +20,7 @@ def parse_party(party_name):
         return "con"
     if re.match("Labour", party_name, flags=re.I):
         return "lab"
-    if re.match("Lib(eral) Dem(ocrat)", party_name, flags=re.I):
+    if re.match("Lib(eral)? Dem(ocrat)?", party_name, flags=re.I):
         return "ld"
     if re.match("UK Independence Party", party_name, flags=re.I):
         return "ukip"
