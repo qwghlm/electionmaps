@@ -1,18 +1,12 @@
 // TODOS:
 //
-// An additional boundary set for hexagons
-// Move infobox when dragging
-//
-// Original boundaries
-// Original hex boundaries
-//
+// Recreate original boundaries
 // Test mobile & other browsers
-// - zoomstart and zoomend on Safari/Firefox don't work
-// - test IE
-// - tap/focus on mobile
 // - scroll/zoom on mobile
+// - tap/focus on mobile
 //
 // Update README
+// Move infobox when dragging
 
 import * as d3 from "d3";
 
@@ -241,7 +235,7 @@ export default class Map<DataRow extends BasicDataRow> {
   }
 
   onZoomStart = (): void => {
-    if (d3.event.sourceEvent.type !== "wheel"){
+    if (d3.event.sourceEvent && d3.event.sourceEvent.type !== "wheel"){
       this._panning = true;
       this.$tooltip.classed("ukem-tooltip-hidden", true);
     }
